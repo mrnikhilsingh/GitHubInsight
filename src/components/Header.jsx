@@ -11,7 +11,7 @@ export const Header = () => {
       <div className="flex items-center justify-between gap-3">
         <div id="search-button" className="rounded-3xl border bg-slate-100">
           <span className="px-4">
-            <i class="fa-solid fa-magnifying-glass"></i>
+            <i className="fa-solid fa-magnifying-glass"></i>
           </span>
           <input
             type="text"
@@ -26,7 +26,7 @@ export const Header = () => {
           id="toggle-button"
           className="p- flex h-[40px] w-[40px] cursor-pointer items-center justify-center rounded-full border bg-slate-100"
         >
-          <i class="fa-solid fa-moon"></i>
+          <i className="fa-solid fa-moon"></i>
         </span>
       </div>
     </header>
