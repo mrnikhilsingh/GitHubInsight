@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { ProfileCardSkeleton } from "./ProfileCardSkeleton";
 
 export const ProfileCard = ({ searchQuery }) => {
   const [profileInfo, setProfileInfo] = useState({});
@@ -108,6 +109,7 @@ export const ProfileCard = ({ searchQuery }) => {
           </p>
         </div>
       </div>
+      <ProfileCardSkeleton />
     </section>
   );
 };

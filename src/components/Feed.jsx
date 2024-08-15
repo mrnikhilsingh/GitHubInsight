@@ -9,6 +9,9 @@ import { useMediaQuery } from "@mui/material";
 import axios from "axios";
 import { FollowCard } from "./FollowCard";
 import { ErrorPage } from "./ErrorPage";
+import { RepoCardSkeleton } from "./RepoCardSkeleton";
+import { ProfileCardSkeleton } from "./ProfileCardSkeleton";
+import { FollowCardSkeleton } from "./FollowCardSkeleton";
 
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -54,10 +57,10 @@ export default function Feed({ width, searchQuery }) {
   const [forkedRepos, setForkedRepos] = useState([]);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const defaultSearchQuery = "mrnikhilsingh";
-    const query = searchQuery || defaultSearchQuery;
+  const defaultSearchQuery = "mrnikhilsingh";
+  const query = searchQuery || defaultSearchQuery;
 
+  useEffect(() => {
     const fetchRepos = axios.get(`https://api.github.com/users/${query}/repos`);
     const fetchFollowers = axios.get(
       `https://api.github.com/users/${query}/followers`,
@@ -160,12 +163,14 @@ export default function Feed({ width, searchQuery }) {
         <CustomTabPanel value={value} index={0}>
           {repoList.length != 0 ? (
             <div id="public-repo" className="grid grid-cols-autoFill gap-4">
+              <RepoCardSkeleton />
               {repoList.map((repo) => (
                 <RepoCard key={repo.id} repo={repo} />
               ))}
             </div>
           ) : (
-            <ErrorPage errName={"public repo"} />
+            <RepoCardSkeleton />
+            // <ErrorPage errName={"public repo"} />
           )}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
@@ -193,6 +198,7 @@ export default function Feed({ width, searchQuery }) {
         <CustomTabPanel value={value} index={3}>
           {followingList.length != 0 ? (
             <div id="following-card" className="grid grid-cols-autoFill gap-4">
+              <FollowCardSkeleton />
               {followingList.map((follows) => (
                 <FollowCard key={follows.id} follows={follows} />
               ))}
