@@ -1,9 +1,9 @@
 import React from "react";
 // import profilePhoto from "../assets/profile.gif";
 
-export const FollowerCard = ({ followers }) => {
+export const FollowCard = ({ follows }) => {
   // console.log(followers);
-  const { login: name, avatar_url: profilePhoto, url: profileUrl } = followers;
+  const { login: name, avatar_url: profilePhoto, url: profileUrl } = follows;
 
   return (
     <div
