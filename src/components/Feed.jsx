@@ -55,93 +55,100 @@ export default function Feed({ width, searchQuery }) {
   const [followersList, setFollowersList] = useState([]);
   const [followingList, setFollowingList] = useState([]);
   const [forkedRepos, setForkedRepos] = useState([]);
+
   const [error, setError] = useState(null);
+
+  const [loadingRepos, setLoadingRepos] = useState(true);
+  const [loadingFollowers, setLoadingFollowers] = useState(true);
+  const [loadingFollowings, setLoadingFollowings] = useState(true);
+
+  const [isFollowersLoaded, setIsFollowersLoaded] = useState(false);
+  const [isFollowingLoaded, setIsFollowingLoaded] = useState(false);
 
   const defaultSearchQuery = "mrnikhilsingh";
   const query = searchQuery || defaultSearchQuery;
+  //   const fetchRepos = axios.get(`https://api.github.com/users/${query}/repos`);
+  //   const fetchFollowers = axios.get(
+  //     `https://api.github.com/users/${query}/followers`,
+  //   );
+  //   const fetchFollowing = axios.get(
+  //     `https://api.github.com/users/${query}/following`,
+  //   );
+
+  //   Promise.all([fetchRepos, fetchFollowers, fetchFollowing])
+  //     .then(([repoResponse, followersResponse, followingResponse]) => {
+  //       setRepoList(repoResponse.data);
+  //       setFollowersList(followersResponse.data);
+  //       setFollowingList(followingResponse.data);
+
+  //       const forks = repoResponse.data.filter((repo) => repo.fork);
+  //       setForkedRepos(forks);
+  //     })
+  //     .catch((err) => {
+  //       console.error(err);
+  //       setError("Failed to load data. Please try again later.");
+  //     });
+  // }, [searchQuery]);
 
   useEffect(() => {
-    const fetchRepos = axios.get(`https://api.github.com/users/${query}/repos`);
-    const fetchFollowers = axios.get(
-      `https://api.github.com/users/${query}/followers`,
-    );
-    const fetchFollowing = axios.get(
-      `https://api.github.com/users/${query}/following`,
-    );
+    setIsFollowersLoaded(false);
+    setIsFollowingLoaded(false);
+    setFollowersList([]);
+    setFollowingList([]);
+    const fetchRepos = async () => {
+      try {
+        const response = await axios.get(
+          `https://api.github.com/users/${query}/repos`,
+        );
+        const data = response.data;
 
-    Promise.all([fetchRepos, fetchFollowers, fetchFollowing])
-      .then(([repoResponse, followersResponse, followingResponse]) => {
-        setRepoList(repoResponse.data);
-        setFollowersList(followersResponse.data);
-        setFollowingList(followingResponse.data);
+        setRepoList(data);
 
-        const forks = repoResponse.data.filter((repo) => repo.fork);
+        // Filter out the forked repositories
+        const forks = data.filter((repo) => repo.fork);
         setForkedRepos(forks);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error(err);
-        setError("Failed to load data. Please try again later.");
-      });
+        setError("Failed to load repositories. Please try again later.");
+      } finally {
+        setLoadingRepos(false);
+      }
+    };
+
+    fetchRepos();
   }, [searchQuery]);
 
-  // useEffect(() => {
-  //   axios
-  //     .get("https://api.github.com/users/codewithsadee/repos")
-  //     .then(({ data }) => {
-  //       setRepoList(data);
+  useEffect(() => {
+    if (value === 2 && !isFollowersLoaded) {
+      axios
+        .get(`https://api.github.com/users/${query}/followers`)
+        .then(({ data }) => setFollowersList(data))
+        .catch((err) => {
+          console.error(err);
+          setError("Failed to load followers. Please try again later.");
+        })
+        .finally(() => {
+          setLoadingFollowers(false);
+        });
 
-  //       const forkedRepos = data.filter((repo) => repo.fork);
-  //       setForkedRepos(forkedRepos);
-  //     })
-  //     .catch((err) => {
-  //       console.log(err);
-  //     });
-  // }, []);
+      setIsFollowersLoaded(true);
+    }
 
-  // useEffect(() => {
-  //   const defaultSearchQuery = "mrnikhilsingh";
-  //   const url = `https://api.github.com/users/${searchQuery || defaultSearchQuery}/repos`;
-  //   console.log("repo url:", url);
+    if (value === 3 && !isFollowingLoaded) {
+      axios
+        .get(`https://api.github.com/users/${query}/following`)
+        .then(({ data }) => setFollowingList(data))
+        .catch((err) => {
+          console.error(err);
+          setError("Failed to load followings. Please try again later.");
+        })
+        .finally(() => {
+          setLoadingFollowings(false);
+        });
 
-  //   axios
-  //     .get(url)
-  //     .then(({ data }) => {
-  //       setRepoList(data);
-  //     })
-  //     .catch((err) => {
-  //       console.log(err);
-  //     });
-  // }, [searchQuery]);
-
-  // useEffect(() => {
-  //   const defaultSearchQuery = "mrnikhilsingh";
-  //   const url = `https://api.github.com/users/${searchQuery || defaultSearchQuery}/followers`;
-  //   console.log("followers url:", url);
-
-  //   axios
-  //     .get(url)
-  //     .then(({ data }) => {
-  //       setFollowersList(data);
-  //     })
-  //     .catch((err) => {
-  //       console.log(err);
-  //     });
-  // }, [searchQuery]);
-
-  // useEffect(() => {
-  //   const defaultSearchQuery = "mrnikhilsingh";
-  //   const url = `https://api.github.com/users/${searchQuery || defaultSearchQuery}/following`;
-  //   console.log("following url:", url);
-
-  //   axios
-  //     .get(url)
-  //     .then(({ data }) => {
-  //       setFollowingList(data);
-  //     })
-  //     .catch((err) => {
-  //       console.log(err);
-  //     });
-  // }, [searchQuery]);
+      setIsFollowingLoaded(true);
+    }
+  }, [value, searchQuery]);
 
   return (
     <section id="feed-section" className="flex-1">
