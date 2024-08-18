@@ -10,9 +10,8 @@ import axios from "axios";
 import { FollowCard } from "./FollowCard";
 import { ErrorPage } from "./ErrorPage";
 import { RepoCardSkeleton } from "./RepoCardSkeleton";
-import { ProfileCardSkeleton } from "./ProfileCardSkeleton";
 import { FollowCardSkeleton } from "./FollowCardSkeleton";
-
+import Pagination from "@mui/material/Pagination";
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -67,40 +66,24 @@ export default function Feed({ width, searchQuery }) {
 
   const defaultSearchQuery = "mrnikhilsingh";
   const query = searchQuery || defaultSearchQuery;
-  //   const fetchRepos = axios.get(`https://api.github.com/users/${query}/repos`);
-  //   const fetchFollowers = axios.get(
-  //     `https://api.github.com/users/${query}/followers`,
-  //   );
-  //   const fetchFollowing = axios.get(
-  //     `https://api.github.com/users/${query}/following`,
-  //   );
-
-  //   Promise.all([fetchRepos, fetchFollowers, fetchFollowing])
-  //     .then(([repoResponse, followersResponse, followingResponse]) => {
-  //       setRepoList(repoResponse.data);
-  //       setFollowersList(followersResponse.data);
-  //       setFollowingList(followingResponse.data);
-
-  //       const forks = repoResponse.data.filter((repo) => repo.fork);
-  //       setForkedRepos(forks);
-  //     })
-  //     .catch((err) => {
-  //       console.error(err);
-  //       setError("Failed to load data. Please try again later.");
-  //     });
-  // }, [searchQuery]);
 
   useEffect(() => {
+    // reset all state
     setIsFollowersLoaded(false);
     setIsFollowingLoaded(false);
+    setLoadingRepos(true);
+    setLoadingFollowers(true);
+    setLoadingFollowings(true);
     setFollowersList([]);
     setFollowingList([]);
+
     const fetchRepos = async () => {
       try {
         const response = await axios.get(
-          `https://api.github.com/users/${query}/repos`,
+          `https://api.github.com/users/${query}/repos?per_page=60`,
         );
         const data = response.data;
+        console.log("repos", data);
 
         setRepoList(data);
 
@@ -118,36 +101,72 @@ export default function Feed({ width, searchQuery }) {
     fetchRepos();
   }, [searchQuery]);
 
+  // useEffect(() => {
+  //   if (value === 2 && !isFollowersLoaded) {
+  //     axios
+  //       .get(`https://api.github.com/users/${query}/followers`)
+  //       .then(({ data }) => setFollowersList(data))
+  //       .catch((err) => {
+  //         console.error(err);
+  //         setError("Failed to load followers. Please try again later.");
+  //       })
+  //       .finally(() => {
+  //         setLoadingFollowers(false);
+  //       });
+
+  //     setIsFollowersLoaded(true);
+  //   }
+
+  //   if (value === 3 && !isFollowingLoaded) {
+  //     axios
+  //       .get(`https://api.github.com/users/${query}/following`)
+  //       .then(({ data }) => setFollowingList(data))
+  //       .catch((err) => {
+  //         console.error(err);
+  //         setError("Failed to load followings. Please try again later.");
+  //       })
+  //       .finally(() => {
+  //         setLoadingFollowings(false);
+  //       });
+
+  //     setIsFollowingLoaded(true);
+  //   }
+  // }, [value, searchQuery]);
+
   useEffect(() => {
-    if (value === 2 && !isFollowersLoaded) {
-      axios
-        .get(`https://api.github.com/users/${query}/followers`)
-        .then(({ data }) => setFollowersList(data))
-        .catch((err) => {
-          console.error(err);
-          setError("Failed to load followers. Please try again later.");
-        })
-        .finally(() => {
-          setLoadingFollowers(false);
-        });
+    const fetchFollowersAndFollowing = async () => {
+      try {
+        if (value === 2 && !isFollowersLoaded) {
+          setLoadingFollowers(true);
+          const response = await axios.get(
+            `https://api.github.com/users/${query}/followers`,
+          );
+          setFollowersList(response.data);
+          console.log("follower", response.data);
 
-      setIsFollowersLoaded(true);
-    }
+          setIsFollowersLoaded(true);
+        }
 
-    if (value === 3 && !isFollowingLoaded) {
-      axios
-        .get(`https://api.github.com/users/${query}/following`)
-        .then(({ data }) => setFollowingList(data))
-        .catch((err) => {
-          console.error(err);
-          setError("Failed to load followings. Please try again later.");
-        })
-        .finally(() => {
-          setLoadingFollowings(false);
-        });
+        if (value === 3 && !isFollowingLoaded) {
+          setLoadingFollowings(true);
+          const response = await axios.get(
+            `https://api.github.com/users/${query}/following`,
+          );
+          setFollowingList(response.data);
+          console.log("following", response.data);
 
-      setIsFollowingLoaded(true);
-    }
+          setIsFollowingLoaded(true);
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load data. Please try again later.");
+      } finally {
+        if (value === 2) setLoadingFollowers(false);
+        if (value === 3) setLoadingFollowings(false);
+      }
+    };
+
+    fetchFollowersAndFollowing();
   }, [value, searchQuery]);
 
   return (
@@ -168,50 +187,63 @@ export default function Feed({ width, searchQuery }) {
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
-          {repoList.length != 0 ? (
+          {loadingRepos ? (
             <div id="public-repo" className="grid grid-cols-autoFill gap-4">
               <RepoCardSkeleton />
+            </div>
+          ) : repoList.length != 0 ? (
+            <div id="public-repo" className="grid grid-cols-autoFill gap-4">
               {repoList.map((repo) => (
                 <RepoCard key={repo.id} repo={repo} />
               ))}
             </div>
           ) : (
-            <RepoCardSkeleton />
-            // <ErrorPage errName={"public repo"} />
+            <ErrorPage errName="public repositories" />
           )}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
-          {forkedRepos.length != 0 ? (
+          {loadingRepos ? (
+            <div id="public-repo" className="grid grid-cols-autoFill gap-4">
+              <RepoCardSkeleton />
+            </div>
+          ) : forkedRepos.length != 0 ? (
             <div id="forked-repo" className="grid grid-cols-autoFill gap-4">
               {forkedRepos.map((repo) => (
                 <RepoCard key={repo.id} repo={repo} />
               ))}
             </div>
           ) : (
-            <ErrorPage errName={"fork repo"} />
+            <ErrorPage errName="fork repositories" />
           )}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={2}>
-          {followersList.length != 0 ? (
+          {loadingFollowers ? (
+            <div id="followers-card" className="grid grid-cols-autoFill gap-4">
+              <FollowCardSkeleton />
+            </div>
+          ) : followersList.length != 0 ? (
             <div id="followers-card" className="grid grid-cols-autoFill gap-4">
               {followersList.map((followers) => (
                 <FollowerCard key={followers.id} followers={followers} />
               ))}
             </div>
           ) : (
-            <ErrorPage errName={"followers"} />
+            <ErrorPage errName="followers" />
           )}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={3}>
-          {followingList.length != 0 ? (
+          {loadingFollowings ? (
             <div id="following-card" className="grid grid-cols-autoFill gap-4">
               <FollowCardSkeleton />
+            </div>
+          ) : followingList.length != 0 ? (
+            <div id="following-card" className="grid grid-cols-autoFill gap-4">
               {followingList.map((follows) => (
                 <FollowCard key={follows.id} follows={follows} />
               ))}
             </div>
           ) : (
-            <ErrorPage errName={"followings"} />
+            <ErrorPage errName="followings" />
           )}
         </CustomTabPanel>
       </Box>
