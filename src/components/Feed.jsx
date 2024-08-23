@@ -64,41 +64,122 @@ export default function Feed({ width, searchQuery }) {
   const [isFollowersLoaded, setIsFollowersLoaded] = useState(false);
   const [isFollowingLoaded, setIsFollowingLoaded] = useState(false);
 
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [allReposFetched, setAllReposFetched] = useState(false);
+
+  const [currentRepos, setCurrentRepos] = useState([]);
+  const [visitedPages, setVisitedPages] = useState(new Set()); // Track visited pages
+
   const defaultSearchQuery = "mrnikhilsingh";
   const query = searchQuery || defaultSearchQuery;
 
+  console.log(repoList);
+
+  // Function to fetch repos
+  async function fetchRepos(page = 1) {
+    console.log("fetching repos");
+
+    try {
+      const response = await axios.get(
+        `https://api.github.com/users/${query}/repos`,
+        {
+          params: { per_page: 40, page },
+        },
+      );
+      const data = response.data;
+      setRepoList((prevRepos) => [...prevRepos, ...data]);
+      setCurrentRepos(data);
+
+      // Filter out the forked repositories
+      const forks = data.filter((repo) => repo.fork);
+      setForkedRepos((prevForks) => [...prevForks, ...forks]);
+
+      // Mark the page as visited
+      setVisitedPages((prev) => new Set(prev).add(page));
+
+      if (data.length < 40) {
+        setAllReposFetched(true);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load repositories. Please try again later.");
+    } finally {
+      setLoadingRepos(false);
+    }
+  }
+
+  // Handle function when page is change
+  const handlePageChange = (event, page) => {
+    setCurrentPage(page);
+
+    // Only fetch more repos if not all repos are fetched
+    if (!allReposFetched && page > currentPage && !visitedPages.has(page)) {
+      setLoadingRepos(true);
+      fetchRepos(page);
+    }
+
+    const lastCardIndex = page * 40;
+    const firstCardIndex = lastCardIndex - 40;
+    setCurrentRepos(repoList.slice(firstCardIndex, lastCardIndex));
+  };
+
   useEffect(() => {
     // reset all state
-    setIsFollowersLoaded(false);
-    setIsFollowingLoaded(false);
+    setRepoList([]);
+    setForkedRepos([]);
+    setFollowersList([]);
+    setFollowingList([]);
     setLoadingRepos(true);
     setLoadingFollowers(true);
     setLoadingFollowings(true);
-    setFollowersList([]);
-    setFollowingList([]);
+    setIsFollowersLoaded(false);
+    setIsFollowingLoaded(false);
+    setCurrentPage(1);
+    setTotalPages(1);
+    setAllReposFetched(false);
+    setCurrentRepos([]);
+    setVisitedPages(new Set());
 
-    const fetchRepos = async () => {
+    // Function to calculate totalRepos Count
+    async function fetchTotalRepos() {
       try {
         const response = await axios.get(
-          `https://api.github.com/users/${query}/repos?per_page=60`,
+          `https://api.github.com/users/${query}/repos`,
+          {
+            params: { per_page: 40 },
+          },
         );
-        const data = response.data;
-        console.log("repos", data);
 
-        setRepoList(data);
+        // Check if the 'Link' header is present
+        const linkHeader = response.headers.link;
+        if (linkHeader) {
+          // Parse the 'Link' header
+          const links = linkHeader.split(",").reduce((acc, link) => {
+            const [urlPart, relPart] = link.split(";");
+            const url = urlPart.trim().slice(1, -1);
+            const rel = relPart.trim().slice(5, -1);
+            acc[rel] = url;
+            return acc;
+          }, {});
 
-        // Filter out the forked repositories
-        const forks = data.filter((repo) => repo.fork);
-        setForkedRepos(forks);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load repositories. Please try again later.");
-      } finally {
-        setLoadingRepos(false);
+          // Determine total pages from 'last' link
+          if (links.last) {
+            const lastPageUrl = new URL(links.last);
+            const totalPages = lastPageUrl.searchParams.get("page");
+
+            setTotalPages(Number(totalPages));
+          }
+        } else {
+          console.log("No pagination, all items received:");
+        }
+      } catch (error) {
+        console.error("Error fetching repos:", error);
       }
-    };
+    }
 
     fetchRepos();
+    fetchTotalRepos();
   }, [searchQuery]);
 
   // useEffect(() => {
@@ -131,13 +212,13 @@ export default function Feed({ width, searchQuery }) {
 
   //     setIsFollowingLoaded(true);
   //   }
-  // }, [value, searchQuery]);
+  // }, [value]);
 
   useEffect(() => {
     const fetchFollowersAndFollowing = async () => {
       try {
         if (value === 2 && !isFollowersLoaded) {
-          setLoadingFollowers(true);
+          // setLoadingFollowers(true);
           const response = await axios.get(
             `https://api.github.com/users/${query}/followers`,
           );
@@ -148,7 +229,7 @@ export default function Feed({ width, searchQuery }) {
         }
 
         if (value === 3 && !isFollowingLoaded) {
-          setLoadingFollowings(true);
+          // setLoadingFollowings(true);
           const response = await axios.get(
             `https://api.github.com/users/${query}/following`,
           );
@@ -193,13 +274,24 @@ export default function Feed({ width, searchQuery }) {
             </div>
           ) : repoList.length != 0 ? (
             <div id="public-repo" className="grid grid-cols-autoFill gap-4">
-              {repoList.map((repo) => (
-                <RepoCard key={repo.id} repo={repo} />
+              {currentRepos.map((repo, index) => (
+                <RepoCard key={index} repo={repo} />
               ))}
             </div>
           ) : (
             <ErrorPage errName="public repositories" />
           )}
+          <Pagination
+            count={totalPages}
+            page={currentPage}
+            onChange={handlePageChange}
+            color="primary"
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "0.6rem",
+            }}
+          />
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
           {loadingRepos ? (
