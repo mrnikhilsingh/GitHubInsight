@@ -75,24 +75,29 @@ export const ProfileCard = ({ searchQuery, setError }) => {
                 <i className="fa-solid fa-location-dot h-[14px] w-[14px] text-center"></i>
                 <span className="pl-3 font-semibold text-gray-600">India</span>
               </div>
-              <div
-                id="website-link"
-                className="text-blue-950 small:text-sm"
-                title="website link"
-              >
-                <a href="#">
-                  <i className="fa-solid fa-link h-[14px] w-[14px]"></i>
-                  <span className="pl-3 font-semibold text-gray-600 transition-colors hover:text-blue-600">
-                    nscoffee.com
-                  </span>
-                </a>
-              </div>
+              {profileInfo.blog && (
+                <div
+                  id="website-link"
+                  className="text-blue-950 small:text-sm"
+                  title="website link"
+                >
+                  <a href={profileInfo.blog} target="_blank">
+                    <i className="fa-solid fa-link h-[14px] w-[14px]"></i>
+                    <span className="pl-3 font-semibold text-gray-600 transition-colors hover:text-blue-600">
+                      {profileInfo.blog}
+                    </span>
+                  </a>
+                </div>
+              )}
               <div
                 id="twitter-link"
                 className="text-blue-950 small:text-sm"
                 title="twitter link"
               >
-                <a href={`https://twitter.com/${profileInfo.twitter_username}`}>
+                <a
+                  href={`https://twitter.com/${profileInfo.twitter_username}`}
+                  target="_blank"
+                >
                   <i className="fa-brands fa-x-twitter h-[14px] w-[14px]"></i>
                   <span className="pl-3 font-semibold text-gray-600 transition-colors hover:text-blue-600">
                     @{profileInfo.twitter_username}

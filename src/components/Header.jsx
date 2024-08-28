@@ -21,7 +21,11 @@ export const Header = ({ setSearchQuery }) => {
         </a>
       </div>
       <div className="flex items-center justify-between gap-2 tablet:gap-3">
-        <SearchField showSearch={showSearch} setShowSearch={setShowSearch} />
+        <SearchField
+          showSearch={showSearch}
+          setShowSearch={setShowSearch}
+          handleSubmit={handleSubmit}
+        />
         <form
           id="search-button"
           className="hidden rounded-3xl border bg-slate-100 mobile:block"
