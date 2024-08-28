@@ -1,7 +1,7 @@
 import React from "react";
 
 export const FollowCardSkeleton = () => {
-  return Array(12)
+  return Array(6)
     .fill(0)
     .map((_, index) => {
       return (

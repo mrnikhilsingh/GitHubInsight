@@ -12,6 +12,7 @@ import { ErrorPage } from "./ErrorPage";
 import { RepoCardSkeleton } from "./RepoCardSkeleton";
 import { FollowCardSkeleton } from "./FollowCardSkeleton";
 import Pagination from "@mui/material/Pagination";
+import { Loader } from "./Loader";
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -64,21 +65,22 @@ export default function Feed({ width, searchQuery }) {
   const [isFollowersLoaded, setIsFollowersLoaded] = useState(false);
   const [isFollowingLoaded, setIsFollowingLoaded] = useState(false);
 
-  const [totalPages, setTotalPages] = useState(1);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [allReposFetched, setAllReposFetched] = useState(false);
+  const [totalPages, setTotalPages] = useState(1); // for Repo
+  const [currentPage, setCurrentPage] = useState(1); // for Repo
+  const [allReposFetched, setAllReposFetched] = useState(false); // for Repo
 
-  const [currentRepos, setCurrentRepos] = useState([]);
+  const [currentRepos, setCurrentRepos] = useState([]); // for Repo
   const [visitedPages, setVisitedPages] = useState(new Set()); // Track visited pages
+
+  const [followerPage, setFollowerPage] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   const defaultSearchQuery = "mrnikhilsingh";
   const query = searchQuery || defaultSearchQuery;
 
-  console.log(repoList);
-
   // Function to fetch repos
   async function fetchRepos(page = 1) {
-    console.log("fetching repos");
+    // console.log("fetching repos");
 
     try {
       const response = await axios.get(
@@ -109,7 +111,7 @@ export default function Feed({ width, searchQuery }) {
     }
   }
 
-  // Handle function when page is change
+  // Handle function when page is change for Repo Section
   const handlePageChange = (event, page) => {
     setCurrentPage(page);
 
@@ -140,6 +142,7 @@ export default function Feed({ width, searchQuery }) {
     setAllReposFetched(false);
     setCurrentRepos([]);
     setVisitedPages(new Set());
+    setFollowerPage(1);
 
     // Function to calculate totalRepos Count
     async function fetchTotalRepos() {
@@ -171,7 +174,7 @@ export default function Feed({ width, searchQuery }) {
             setTotalPages(Number(totalPages));
           }
         } else {
-          console.log("No pagination, all items received:");
+          // console.log("No pagination, all items received:");
         }
       } catch (error) {
         console.error("Error fetching repos:", error);
@@ -214,41 +217,85 @@ export default function Feed({ width, searchQuery }) {
   //   }
   // }, [value]);
 
+  // const handleScroll = () => {
+  //   console.log("scrolling");
+  //   const innerHeight = window.innerHeight;
+  //   const scrollTop = document.documentElement.scrollTop;
+  //   const scrollHeight = document.documentElement.scrollHeight;
+
+  //   // console.log(scrollTop, innerHeight, scrollHeight);
+  //   if (scrollTop + innerHeight + 1 >= scrollHeight) {
+  //     console.log("reached bottom");
+  //     setFollowerPage((prev) => prev + 1);
+  //     // setIsFollowersLoaded(false);
+  //     // console.log(followerPage);
+  //   }
+  // };
+
+  const handleScroll = () => {
+    console.log("scrolling");
+    const innerHeight = window.innerHeight;
+    const scrollTop = document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight;
+
+    if (scrollTop + innerHeight + 1 >= scrollHeight) {
+      console.log("reached bottom");
+      setFollowerPage((prev) => prev + 1);
+      setLoading(true);
+      setIsFollowersLoaded(false);
+    }
+  };
+
+  async function fetchFollowers(page) {
+    try {
+      const response = await axios.get(
+        `https://api.github.com/users/${query}/followers?per_page=30&page=${page}`,
+      );
+      setFollowersList((prev) => [...prev, ...response.data]);
+      setIsFollowersLoaded(true);
+      // Stop loading if the data is less than the requested amount (end of data)
+      // if (response.data.length < 30) {
+      //   setIsFollowersLoaded(true);
+      // }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load data. Please try again later.");
+    } finally {
+      setLoadingFollowers(false);
+      setLoading(false);
+    }
+  }
+
+  async function fetchFollowings() {
+    try {
+      const response = await axios.get(
+        `https://api.github.com/users/${query}/following?per_page=40`,
+      );
+      setFollowingList(response.data);
+      setIsFollowingLoaded(true);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load data. Please try again later.");
+    } finally {
+      setLoadingFollowings(false);
+    }
+  }
+
   useEffect(() => {
-    const fetchFollowersAndFollowing = async () => {
-      try {
-        if (value === 2 && !isFollowersLoaded) {
-          // setLoadingFollowers(true);
-          const response = await axios.get(
-            `https://api.github.com/users/${query}/followers`,
-          );
-          setFollowersList(response.data);
-          console.log("follower", response.data);
+    if (value === 2 && !isFollowersLoaded) {
+      fetchFollowers(followerPage);
+    }
+    if (value === 3 && !isFollowingLoaded) {
+      fetchFollowings();
+    }
+  }, [value, followerPage]);
 
-          setIsFollowersLoaded(true);
-        }
-
-        if (value === 3 && !isFollowingLoaded) {
-          // setLoadingFollowings(true);
-          const response = await axios.get(
-            `https://api.github.com/users/${query}/following`,
-          );
-          setFollowingList(response.data);
-          console.log("following", response.data);
-
-          setIsFollowingLoaded(true);
-        }
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load data. Please try again later.");
-      } finally {
-        if (value === 2) setLoadingFollowers(false);
-        if (value === 3) setLoadingFollowings(false);
-      }
-    };
-
-    fetchFollowersAndFollowing();
-  }, [value, searchQuery]);
+  useEffect(() => {
+    if (value === 2) {
+      window.addEventListener("scroll", handleScroll);
+    }
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
 
   return (
     <section id="feed-section" className="flex-1">
@@ -278,8 +325,10 @@ export default function Feed({ width, searchQuery }) {
                 <RepoCard key={index} repo={repo} />
               ))}
             </div>
+          ) : !error ? (
+            <ErrorPage name="public repositories" />
           ) : (
-            <ErrorPage errName="public repositories" />
+            error
           )}
           <Pagination
             count={totalPages}
@@ -304,8 +353,10 @@ export default function Feed({ width, searchQuery }) {
                 <RepoCard key={repo.id} repo={repo} />
               ))}
             </div>
+          ) : !error ? (
+            <ErrorPage name="fork repositories" />
           ) : (
-            <ErrorPage errName="fork repositories" />
+            error
           )}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={2}>
@@ -319,9 +370,12 @@ export default function Feed({ width, searchQuery }) {
                 <FollowerCard key={followers.id} followers={followers} />
               ))}
             </div>
+          ) : !error ? (
+            <ErrorPage name="followers" />
           ) : (
-            <ErrorPage errName="followers" />
+            error
           )}
+          {loading && <Loader />}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={3}>
           {loadingFollowings ? (
@@ -334,8 +388,10 @@ export default function Feed({ width, searchQuery }) {
                 <FollowCard key={follows.id} follows={follows} />
               ))}
             </div>
+          ) : !error ? (
+            <ErrorPage name="followings" />
           ) : (
-            <ErrorPage errName="followings" />
+            error
           )}
         </CustomTabPanel>
       </Box>
