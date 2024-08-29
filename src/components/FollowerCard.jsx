@@ -1,9 +1,9 @@
 import React from "react";
-// import profilePhoto from "../assets/profile.gif";
+import { Link } from "react-router-dom";
 
 export const FollowerCard = ({ followers }) => {
-  // console.log(followers);
   const { login: name, avatar_url: profilePhoto, url: profileUrl } = followers;
+  console.log(name);
 
   return (
     <div
@@ -13,18 +13,18 @@ export const FollowerCard = ({ followers }) => {
       <div id="body" className="flex items-center gap-3 text-gray-700">
         <div
           id="profile-pic"
-          className="max-h-12 max-w-12 overflow-hidden rounded-full"
+          className="h-12 w-12 overflow-hidden rounded-full"
         >
-          <img src={profilePhoto} alt="profile photo" />
+          <img src={profilePhoto} alt="profile photo" loading="lazy" />
         </div>
         <p id="name">{name}</p>
       </div>
-      <a
-        href={profileUrl}
+      <Link
+        to={`/user/${name}`}
         className="flex items-center justify-center rounded-full bg-gray-200 p-4 text-gray-800 hover:bg-gray-300"
       >
         <i className="fa-solid fa-link"></i>
-      </a>
+      </Link>
     </div>
   );
 };

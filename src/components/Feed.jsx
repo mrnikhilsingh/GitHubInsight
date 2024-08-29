@@ -8,11 +8,12 @@ import { FollowerCard } from "./FollowerCard";
 import { useMediaQuery } from "@mui/material";
 import axios from "axios";
 import { FollowCard } from "./FollowCard";
-import { ErrorPage } from "./ErrorPage";
+import { ErrorPage } from "./NoResults";
 import { RepoCardSkeleton } from "./RepoCardSkeleton";
 import { FollowCardSkeleton } from "./FollowCardSkeleton";
 import Pagination from "@mui/material/Pagination";
 import { Loader } from "./Loader";
+import { useParams } from "react-router-dom";
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -75,13 +76,12 @@ export default function Feed({ width, searchQuery }) {
   const [followerPage, setFollowerPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
+  const { username } = useParams();
   const defaultSearchQuery = "mrnikhilsingh";
-  const query = searchQuery || defaultSearchQuery;
+  const query = username || searchQuery || defaultSearchQuery;
 
   // Function to fetch repos
   async function fetchRepos(page = 1) {
-    // console.log("fetching repos");
-
     try {
       const response = await axios.get(
         `https://api.github.com/users/${query}/repos`,
@@ -128,6 +128,7 @@ export default function Feed({ width, searchQuery }) {
 
   useEffect(() => {
     // reset all state
+    setValue(0);
     setRepoList([]);
     setForkedRepos([]);
     setFollowersList([]);
@@ -173,8 +174,6 @@ export default function Feed({ width, searchQuery }) {
 
             setTotalPages(Number(totalPages));
           }
-        } else {
-          // console.log("No pagination, all items received:");
         }
       } catch (error) {
         console.error("Error fetching repos:", error);
@@ -183,54 +182,7 @@ export default function Feed({ width, searchQuery }) {
 
     fetchRepos();
     fetchTotalRepos();
-  }, [searchQuery]);
-
-  // useEffect(() => {
-  //   if (value === 2 && !isFollowersLoaded) {
-  //     axios
-  //       .get(`https://api.github.com/users/${query}/followers`)
-  //       .then(({ data }) => setFollowersList(data))
-  //       .catch((err) => {
-  //         console.error(err);
-  //         setError("Failed to load followers. Please try again later.");
-  //       })
-  //       .finally(() => {
-  //         setLoadingFollowers(false);
-  //       });
-
-  //     setIsFollowersLoaded(true);
-  //   }
-
-  //   if (value === 3 && !isFollowingLoaded) {
-  //     axios
-  //       .get(`https://api.github.com/users/${query}/following`)
-  //       .then(({ data }) => setFollowingList(data))
-  //       .catch((err) => {
-  //         console.error(err);
-  //         setError("Failed to load followings. Please try again later.");
-  //       })
-  //       .finally(() => {
-  //         setLoadingFollowings(false);
-  //       });
-
-  //     setIsFollowingLoaded(true);
-  //   }
-  // }, [value]);
-
-  // const handleScroll = () => {
-  //   console.log("scrolling");
-  //   const innerHeight = window.innerHeight;
-  //   const scrollTop = document.documentElement.scrollTop;
-  //   const scrollHeight = document.documentElement.scrollHeight;
-
-  //   // console.log(scrollTop, innerHeight, scrollHeight);
-  //   if (scrollTop + innerHeight + 1 >= scrollHeight) {
-  //     console.log("reached bottom");
-  //     setFollowerPage((prev) => prev + 1);
-  //     // setIsFollowersLoaded(false);
-  //     // console.log(followerPage);
-  //   }
-  // };
+  }, [searchQuery, username]);
 
   const handleScroll = () => {
     console.log("scrolling");
@@ -319,7 +271,7 @@ export default function Feed({ width, searchQuery }) {
             <div id="public-repo" className="grid grid-cols-autoFill gap-4">
               <RepoCardSkeleton />
             </div>
-          ) : repoList.length != 0 ? (
+          ) : repoList.length ? (
             <div id="public-repo" className="grid grid-cols-autoFill gap-4">
               {currentRepos.map((repo, index) => (
                 <RepoCard key={index} repo={repo} />
@@ -330,24 +282,26 @@ export default function Feed({ width, searchQuery }) {
           ) : (
             error
           )}
-          <Pagination
-            count={totalPages}
-            page={currentPage}
-            onChange={handlePageChange}
-            color="primary"
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              marginTop: "0.6rem",
-            }}
-          />
+          {!(repoList.length < 40) && (
+            <Pagination
+              count={totalPages}
+              page={currentPage}
+              onChange={handlePageChange}
+              color="primary"
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                marginTop: "0.6rem",
+              }}
+            />
+          )}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
           {loadingRepos ? (
             <div id="public-repo" className="grid grid-cols-autoFill gap-4">
               <RepoCardSkeleton />
             </div>
-          ) : forkedRepos.length != 0 ? (
+          ) : forkedRepos.length ? (
             <div id="forked-repo" className="grid grid-cols-autoFill gap-4">
               {forkedRepos.map((repo) => (
                 <RepoCard key={repo.id} repo={repo} />
@@ -364,7 +318,7 @@ export default function Feed({ width, searchQuery }) {
             <div id="followers-card" className="grid grid-cols-autoFill gap-4">
               <FollowCardSkeleton />
             </div>
-          ) : followersList.length != 0 ? (
+          ) : followersList.length ? (
             <div id="followers-card" className="grid grid-cols-autoFill gap-4">
               {followersList.map((followers) => (
                 <FollowerCard key={followers.id} followers={followers} />
@@ -382,7 +336,7 @@ export default function Feed({ width, searchQuery }) {
             <div id="following-card" className="grid grid-cols-autoFill gap-4">
               <FollowCardSkeleton />
             </div>
-          ) : followingList.length != 0 ? (
+          ) : followingList.length ? (
             <div id="following-card" className="grid grid-cols-autoFill gap-4">
               {followingList.map((follows) => (
                 <FollowCard key={follows.id} follows={follows} />

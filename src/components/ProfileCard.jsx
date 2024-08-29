@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { ProfileCardSkeleton } from "./ProfileCardSkeleton";
+import { useParams } from "react-router-dom";
+import placeholder from "../assets/placeholder.png";
 
 export const ProfileCard = ({ searchQuery, setError }) => {
   const [profileInfo, setProfileInfo] = useState({});
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const { username } = useParams();
 
   useEffect(() => {
     setLoadingProfile(true);
     const fetchProfileInfo = async () => {
       const defaultSearchQuery = "mrnikhilsingh";
-      const query = searchQuery || defaultSearchQuery;
+      const query = username || searchQuery || defaultSearchQuery;
       const url = `https://api.github.com/users/${query}`;
       try {
         const response = await axios.get(url);
@@ -27,7 +30,7 @@ export const ProfileCard = ({ searchQuery, setError }) => {
     };
 
     fetchProfileInfo();
-  }, [searchQuery]);
+  }, [searchQuery, username]);
 
   return (
     <section
@@ -40,9 +43,13 @@ export const ProfileCard = ({ searchQuery, setError }) => {
         <>
           <div
             id="profile-pic-container"
-            className="mx-auto max-h-52 max-w-52 overflow-hidden rounded-full border small:mx-0"
+            className="mx-auto h-52 w-52 overflow-hidden rounded-full border small:mx-0"
           >
-            <img src={profileInfo.avatar_url} alt="Profile Picture" />
+            <img
+              src={profileInfo.avatar_url}
+              alt="Profile Picture"
+              loading="lazy"
+            />
           </div>
           <div id="profile-info">
             <p
@@ -81,11 +88,11 @@ export const ProfileCard = ({ searchQuery, setError }) => {
                   className="text-blue-950 small:text-sm"
                   title="website link"
                 >
-                  <a href={profileInfo.blog} target="_blank">
+                  <a href={profileInfo.blog} target="_blank" className="flex">
                     <i className="fa-solid fa-link h-[14px] w-[14px]"></i>
-                    <span className="pl-3 font-semibold text-gray-600 transition-colors hover:text-blue-600">
+                    <p className="break-all pl-3 font-semibold text-gray-600 transition-colors hover:text-blue-600">
                       {profileInfo.blog}
-                    </span>
+                    </p>
                   </a>
                 </div>
               )}
