@@ -3,7 +3,7 @@ import axios from "axios";
 import { ProfileCardSkeleton } from "./ProfileCardSkeleton";
 import { useParams } from "react-router-dom";
 
-export const ProfileCard = ({ searchQuery, setError }) => {
+export const ProfileCard = ({ setError }) => {
   const [profileInfo, setProfileInfo] = useState({});
   const [loadingProfile, setLoadingProfile] = useState(true);
   const { username } = useParams();
@@ -12,7 +12,7 @@ export const ProfileCard = ({ searchQuery, setError }) => {
     setLoadingProfile(true);
     const fetchProfileInfo = async () => {
       const defaultSearchQuery = "mrnikhilsingh";
-      const query = username || searchQuery || defaultSearchQuery;
+      const query = username || defaultSearchQuery;
       const url = `https://api.github.com/users/${query}`;
       try {
         const response = await axios.get(url);
@@ -29,7 +29,7 @@ export const ProfileCard = ({ searchQuery, setError }) => {
     };
 
     fetchProfileInfo();
-  }, [searchQuery, username]);
+  }, [username]);
 
   return (
     <section

@@ -1,17 +1,20 @@
 import React, { useState } from "react";
 import { SearchField } from "./SearchField";
 import { useMediaQuery } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
-export const Header = ({ setSearchQuery, isDark, handleThemeSwitch }) => {
+export const Header = ({ isDark, handleThemeSwitch }) => {
   const isWideScreen = useMediaQuery((theme) => theme.breakpoints.up(599));
   const [showSearch, setShowSearch] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const inputData = new FormData(e.target);
     for (const value of inputData.values()) {
       if (value) {
-        setSearchQuery(value);
+        // Redirect to the desired URL
+        navigate(`/user/${value}`);
       }
     }
     e.target.reset();

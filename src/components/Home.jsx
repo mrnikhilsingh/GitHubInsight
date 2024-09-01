@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ProfileCard } from "./ProfileCard";
 import Feed from "./Feed";
 
-export const Home = ({ searchQuery, isDark }) => {
+export const Home = ({ isDark }) => {
   const [error, setError] = useState(null);
 
   return (
@@ -18,8 +18,8 @@ export const Home = ({ searchQuery, isDark }) => {
           <h1>{error}</h1>
         ) : (
           <>
-            <ProfileCard searchQuery={searchQuery} setError={setError} />
-            <Feed searchQuery={searchQuery} isDark={isDark} />
+            <ProfileCard setError={setError} />
+            <Feed isDark={isDark} />
           </>
         )}
       </div>

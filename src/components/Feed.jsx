@@ -43,7 +43,7 @@ function a11yProps(index) {
   };
 }
 
-export default function Feed({ width, searchQuery, isDark }) {
+export default function Feed({ width, isDark }) {
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event, newValue) => {
@@ -78,7 +78,7 @@ export default function Feed({ width, searchQuery, isDark }) {
 
   const { username } = useParams();
   const defaultSearchQuery = "mrnikhilsingh";
-  const query = username || searchQuery || defaultSearchQuery;
+  const query = username || defaultSearchQuery;
 
   // Function to fetch repos
   async function fetchRepos(page = 1) {
@@ -182,7 +182,7 @@ export default function Feed({ width, searchQuery, isDark }) {
 
     fetchRepos();
     fetchTotalRepos();
-  }, [searchQuery, username]);
+  }, [username]);
 
   const handleScroll = () => {
     console.log("scrolling");

@@ -8,7 +8,6 @@ import { createTheme } from "@mui/material/styles";
 const theme = createTheme();
 
 function App() {
-  const [searchQuery, setSearchQuery] = useState("");
   const [isDark, setIsDark] = useState(
     JSON.parse(localStorage.getItem("isDark")),
   );
@@ -28,13 +27,8 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <Header
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        isDark={isDark}
-        handleThemeSwitch={handleThemeSwitch}
-      />
-      <Home searchQuery={searchQuery} isDark={isDark} />
+      <Header isDark={isDark} handleThemeSwitch={handleThemeSwitch} />
+      <Home isDark={isDark} />
     </ThemeProvider>
   );
 }

@@ -2,9 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 export const FollowerCard = ({ followers }) => {
-  const { login: name, avatar_url: profilePhoto, url: profileUrl } = followers;
-  console.log(name);
-
+  const { login: name, avatar_url: profilePhoto } = followers;
   return (
     <div
       id="follower-card"
