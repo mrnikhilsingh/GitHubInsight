@@ -43,7 +43,7 @@ function a11yProps(index) {
   };
 }
 
-export default function Feed({ width, searchQuery }) {
+export default function Feed({ width, searchQuery, isDark }) {
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event, newValue) => {
@@ -258,12 +258,31 @@ export default function Feed({ width, searchQuery }) {
             onChange={handleChange}
             variant={isWideScreen ? "fullWidth" : "scrollable"}
             aria-label="scrollable auto tabs example"
-            sx={{ width: "100%", justifyContent: "space-between" }}
+            sx={{
+              width: "100%",
+              justifyContent: "space-between",
+            }}
           >
-            <Tab label="Repositories" {...a11yProps(0)} />
-            <Tab label="Forked" {...a11yProps(1)} />
-            <Tab label="Followers" {...a11yProps(2)} />
-            <Tab label="Followings" {...a11yProps(3)} />
+            <Tab
+              sx={isDark ? { color: "white" } : { color: "default" }}
+              label="Repositories"
+              {...a11yProps(0)}
+            />
+            <Tab
+              sx={isDark ? { color: "white" } : { color: "default" }}
+              label="Forked"
+              {...a11yProps(1)}
+            />
+            <Tab
+              sx={isDark ? { color: "white" } : { color: "default" }}
+              label="Followers"
+              {...a11yProps(2)}
+            />
+            <Tab
+              sx={isDark ? { color: "white" } : { color: "default" }}
+              label="Followings"
+              {...a11yProps(3)}
+            />
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
@@ -292,16 +311,15 @@ export default function Feed({ width, searchQuery }) {
                 display: "flex",
                 justifyContent: "center",
                 marginTop: "0.6rem",
+                "& .MuiPaginationItem-root": {
+                  color: isDark ? "white" : "", // or any other color you want
+                },
               }}
             />
           )}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
-          {loadingRepos ? (
-            <div id="public-repo" className="grid grid-cols-autoFill gap-4">
-              <RepoCardSkeleton />
-            </div>
-          ) : forkedRepos.length ? (
+          {forkedRepos.length ? (
             <div id="forked-repo" className="grid grid-cols-autoFill gap-4">
               {forkedRepos.map((repo) => (
                 <RepoCard key={repo.id} repo={repo} />
