@@ -55,7 +55,7 @@ export const Header = ({ isDark, handleThemeSwitch }) => {
           {isWideScreen && (
             <form
               id="search-field-desktop"
-              className="hidden rounded-3xl border bg-slate-100 mobile:block dark:border-blue-950 dark:bg-[#1F2A47]"
+              className="hidden rounded-3xl border bg-slate-100 mobile:block dark:border-blue-950 dark:bg-[#1F2A47] dark:focus-within:border-2 dark:focus-within:border-blue-800"
               onSubmit={handleSubmit}
             >
               <span className="px-4">
@@ -77,7 +77,7 @@ export const Header = ({ isDark, handleThemeSwitch }) => {
           )}
           <button
             id="toggle-button"
-            className="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-full border bg-slate-100 dark:border-blue-950 dark:bg-[#1F2A47]"
+            className="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-full border bg-slate-100 hover:bg-gray-300 dark:border-blue-950 dark:bg-[#1F2A47] dark:hover:border-blue-900 dark:hover:bg-[#222f53]"
             onClick={handleThemeSwitch}
           >
             <i

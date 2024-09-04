@@ -8,5 +8,5 @@ body {
 
 /* apply transition to all elements while changing colors, from light to dark and vice versa */
 * {
-  @apply transition-colors duration-200;
+  @apply transition-colors duration-150;
 }

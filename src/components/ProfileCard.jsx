@@ -18,11 +18,12 @@ export const ProfileCard = ({ setError }) => {
         const response = await axios.get(url);
         setProfileInfo(response.data);
       } catch (err) {
-        console.error(err);
-        setError(
-          "Failed to load repositories. Please try again later.",
-          err.message,
-        );
+        console.log(err.response.data.message);
+        if (err.response.data.message == "Not Found") {
+          setError("There is no account with this username yet.");
+        } else {
+          setError("Failed to load repositories. Please try again later.");
+        }
       } finally {
         setLoadingProfile(false);
       }
@@ -71,7 +72,7 @@ export const ProfileCard = ({ setError }) => {
             </p>
             <div
               id="github-link"
-              className="mx-2 rounded-md border bg-blue-200 py-2 text-center text-sm font-semibold text-blue-500 transition-all ease-in-out tablet:hover:-translate-y-1 tablet:hover:scale-105 dark:border-blue-950 dark:bg-[#1F2A47] dark:text-blue-400"
+              className="rounded-md border bg-blue-200 py-2 text-center text-sm font-semibold text-blue-500 transition-all ease-in-out tablet:hover:-translate-y-1 tablet:hover:scale-105 dark:border-blue-950 dark:bg-[#1F2A47] dark:text-blue-400 dark:hover:border-blue-900 dark:hover:bg-[#222f53]"
               title="view GitHub profile"
             >
               <i className="fa-solid fa-arrow-up-right-from-square"></i>
