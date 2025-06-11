@@ -185,13 +185,13 @@ export default function Feed({ width, isDark }) {
   }, [username]);
 
   const handleScroll = () => {
-    console.log("scrolling");
+    // console.log("scrolling");
     const innerHeight = window.innerHeight;
     const scrollTop = document.documentElement.scrollTop;
     const scrollHeight = document.documentElement.scrollHeight;
 
     if (scrollTop + innerHeight + 1 >= scrollHeight) {
-      console.log("reached bottom");
+      // console.log("reached bottom");
       setFollowerPage((prev) => prev + 1);
       setLoading(true);
       setIsFollowersLoaded(false);

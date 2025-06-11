@@ -18,11 +18,14 @@ export const ProfileCard = ({ setError }) => {
         const response = await axios.get(url);
         setProfileInfo(response.data);
       } catch (err) {
-        console.log(err.response.data.message);
+        // console.log(err.response.data.message);
         if (err.response.data.message == "Not Found") {
           setError("There is no account with this username yet.");
         } else {
-          setError("Failed to load repositories. Please try again later.");
+          setError(
+            "Failed to load repositories, Please try again later. " +
+              err.response.data.message,
+          );
         }
       } finally {
         setLoadingProfile(false);
@@ -155,8 +158,8 @@ export const ProfileCard = ({ setError }) => {
             <div className="hidden tablet:block">
               <hr className="my-4 dark:border-gray-800" />
               <p className="text-xs font-semibold text-gray-600 dark:font-normal dark:text-white">
-                <i className="fa-regular fa-copyright"></i> 2024 Made with by{" "}
-                <i className="fa-solid fa-heart"></i> Nikhil Singh
+                <i className="fa-regular fa-copyright"></i> 2024 Made with{" "}
+                <i className="fa-solid fa-heart"></i> by Nikhil Singh
               </p>
             </div>
           </div>
